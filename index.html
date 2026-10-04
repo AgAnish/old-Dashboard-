@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#eef1f4" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0d1317" media="(prefers-color-scheme: dark)">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Dashboard">
+  <title>Dashboard</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/png" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #eef1f4;
+      --surface: #ffffff;
+      --surface-hover: #f6f9fb;
+      --border: #dce2e8;
+      --ink: #14202b;
+      --muted: #5d6c7a;
+      --accent: #0d6b78;
+      --accent-soft: #dff1f3;
+      --focus: #0d6b78;
+      --shadow: 0 1px 2px rgba(20, 32, 43, .06);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0d1317;
+        --surface: #162027;
+        --surface-hover: #1c2933;
+        --border: #25333d;
+        --ink: #e8eef2;
+        --muted: #8fa0ad;
+        --accent: #5ccad6;
+        --accent-soft: #17343a;
+        --focus: #5ccad6;
+        --shadow: none;
+      }
+    }
+
+    * { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      line-height: 1.4;
+    }
+
+    .wrap {
+      width: 100%;
+      max-width: 640px;
+      margin: 0 auto;
+      padding: calc(40px + env(safe-area-inset-top, 0px)) 20px calc(56px + env(safe-area-inset-bottom, 0px));
+    }
+
+    header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(28px, 6vw, 38px);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+    }
+
+    .subtitle { margin: 8px 0 0; font-size: 16px; color: var(--muted); }
+
+    .btn {
+      flex: none;
+      padding: 10px 14px;
+      font: inherit;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--accent);
+      background: var(--accent-soft);
+      border: 0;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    .btn[hidden] { display: none; }
+
+    .search {
+      width: 100%;
+      margin: 0 0 14px;
+      padding: 14px 16px;
+      font: inherit;
+      font-size: 16px;
+      color: var(--ink);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+    }
+    .search::placeholder { color: var(--muted); }
+
+    .list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      min-height: 72px;
+      padding: 12px 16px;
+      color: inherit;
+      text-decoration: none;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+      transition: background-color .15s ease, border-color .15s ease;
+    }
+    .row:hover { background: var(--surface-hover); border-color: var(--accent); }
+    .row:active { background: var(--accent-soft); }
+
+    .row:focus-visible,
+    .search:focus-visible,
+    .btn:focus-visible {
+      outline: 3px solid var(--focus);
+      outline-offset: 2px;
+    }
+
+    .icon {
+      flex: none;
+      display: grid;
+      place-items: center;
+      width: 48px;
+      height: 48px;
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--accent);
+      background: var(--accent-soft);
+      border-radius: 12px;
+    }
+
+    .text { flex: 1; min-width: 0; }
+    .name { display: block; font-size: 18px; font-weight: 700; letter-spacing: -0.005em; }
+    .desc { display: block; margin-top: 2px; font-size: 14px; color: var(--muted); }
+
+    .chevron {
+      flex: none;
+      width: 20px;
+      height: 20px;
+      color: var(--muted);
+      transition: transform .15s ease, color .15s ease;
+    }
+    .row:hover .chevron { color: var(--accent); transform: translateX(3px); }
+
+    /* loading placeholders */
+    .skeleton {
+      height: 72px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      opacity: .6;
+    }
+
+    .note {
+      margin: 0 0 14px;
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .message {
+      padding: 28px 16px;
+      text-align: center;
+      color: var(--muted);
+      background: var(--surface);
+      border: 1px dashed var(--border);
+      border-radius: 14px;
+    }
+    .message .btn { margin-top: 14px; }
+
+    @media (min-width: 768px) {
+      .wrap { padding-top: 72px; }
+      .row { min-height: 80px; padding: 14px 20px; }
+      .name { font-size: 19px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .row, .chevron { transition: none; }
+      .row:hover .chevron { transform: none; }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <header>
+      <div>
+        <h1 id="title">Dashboard</h1>
+        <p class="subtitle" id="subtitle"></p>
+      </div>
+      <button class="btn" id="install" type="button" hidden>Install app</button>
+    </header>
+
+    <div id="tools"></div>
+  </main>
+
+  <script>
+    // ====== SETTINGS: paste your Apps Script web app URL (ends with /exec) ======
+    var API_URL = 'PASTE_YOUR_APPS_SCRIPT_EXEC_URL_HERE';
+    // ===========================================================================
+
+    var CACHE_KEY = 'dashboard-menu-v1';
+    var toolsEl = document.getElementById('tools');
+    var titleEl = document.getElementById('title');
+    var subtitleEl = document.getElementById('subtitle');
+
+    function el(tag, className, text) {
+      var node = document.createElement(tag);
+      if (className) node.className = className;
+      if (text != null) node.textContent = text;
+      return node;
+    }
+
+    function readCache() {
+      try { return JSON.parse(localStorage.getItem(CACHE_KEY)); } catch (e) { return null; }
+    }
+    function writeCache(data) {
+      try { localStorage.setItem(CACHE_KEY, JSON.stringify(data)); } catch (e) {}
+    }
+
+    function showSkeleton() {
+      toolsEl.textContent = '';
+      var list = el('div', 'list');
+      for (var i = 0; i < 5; i++) list.appendChild(el('div', 'skeleton'));
+      toolsEl.appendChild(list);
+    }
+
+    function showMessage(text, withRetry) {
+      toolsEl.textContent = '';
+      var box = el('div', 'message');
+      box.appendChild(el('div', null, text));
+      if (withRetry) {
+        var retry = el('button', 'btn', 'Try again');
+        retry.type = 'button';
+        retry.addEventListener('click', load);
+        box.appendChild(retry);
+      }
+      toolsEl.appendChild(box);
+    }
+
+    function render(data, offline) {
+      document.title = data.title || 'Dashboard';
+      titleEl.textContent = data.title || 'Dashboard';
+      subtitleEl.textContent = data.subtitle || '';
+
+      var items = (data.items || []).filter(function (it) {
+        return it && it.name && /^https?:\/\//i.test(it.link || '');
+      });
+
+      toolsEl.textContent = '';
+
+      if (offline) {
+        toolsEl.appendChild(el('p', 'note', 'No connection. Showing the last saved list.'));
+      }
+
+      if (items.length === 0) {
+        showMessage('Nothing to show yet. Add a name (column A) and a link (column B) in the Menu sheet.', false);
+        return;
+      }
+
+      var search = null;
+      if (items.length > 6) {
+        search = el('input', 'search');
+        search.type = 'search';
+        search.placeholder = 'Search';
+        search.setAttribute('aria-label', 'Search tools');
+        search.autocomplete = 'off';
+        toolsEl.appendChild(search);
+      }
+
+      var list = el('ul', 'list');
+      var rows = [];
+
+      items.forEach(function (it) {
+        var li = document.createElement('li');
+        var a = el('a', 'row');
+        a.href = it.link;
+        a.target = '_blank';
+        a.rel = 'noopener';
+
+        a.appendChild(el('span', 'icon', it.icon || it.name.charAt(0).toUpperCase()));
+        a.lastChild.setAttribute('aria-hidden', 'true');
+
+        var text = el('span', 'text');
+        text.appendChild(el('span', 'name', it.name));
+        if (it.desc) text.appendChild(el('span', 'desc', it.desc));
+        a.appendChild(text);
+
+        a.insertAdjacentHTML('beforeend',
+          '<svg class="chevron" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" ' +
+          'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.5 4.5 13 10l-5.5 5.5"/></svg>');
+
+        li.appendChild(a);
+        list.appendChild(li);
+        rows.push({ li: li, key: (it.name + ' ' + (it.desc || '')).toLowerCase() });
+      });
+
+      toolsEl.appendChild(list);
+
+      var empty = el('div', 'message', 'No matching tools.');
+      empty.hidden = true;
+      toolsEl.appendChild(empty);
+
+      if (search) {
+        search.addEventListener('input', function () {
+          var q = search.value.trim().toLowerCase();
+          var visible = 0;
+          rows.forEach(function (r) {
+            var match = r.key.indexOf(q) !== -1;
+            r.li.style.display = match ? '' : 'none';
+            if (match) visible++;
+          });
+          empty.hidden = visible !== 0;
+        });
+      }
+    }
+
+    function load() {
+      var cached = readCache();
+
+      // Show the saved list instantly, then refresh it in the background.
+      if (cached) render(cached, false); else showSkeleton();
+
+      if (!API_URL || API_URL.indexOf('PASTE_') === 0) {
+        showMessage('Setup needed: add your Apps Script /exec URL in index.html (API_URL).', false);
+        return;
+      }
+
+      fetch(API_URL, { redirect: 'follow' })
+        .then(function (res) {
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          return res.json();
+        })
+        .then(function (data) {
+          writeCache(data);
+          render(data, false);
+        })
+        .catch(function () {
+          if (cached) render(cached, true);
+          else showMessage('Could not load the list. Check your internet connection.', true);
+        });
+    }
+
+    load();
+
+    // Refresh when the app is brought back to the foreground
+    document.addEventListener('visibilitychange', function () {
+      if (document.visibilityState === 'visible') load();
+    });
+
+    // ---- Install button (shown only when the browser allows installing) ----
+    var deferredPrompt = null;
+    var installBtn = document.getElementById('install');
+
+    window.addEventListener('beforeinstallprompt', function (e) {
+      e.preventDefault();
+      deferredPrompt = e;
+      installBtn.hidden = false;
+    });
+
+    installBtn.addEventListener('click', function () {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then(function () {
+        deferredPrompt = null;
+        installBtn.hidden = true;
+      });
+    });
+
+    window.addEventListener('appinstalled', function () { installBtn.hidden = true; });
+
+    // ---- Service worker (needed for installability and offline start) ----
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('sw.js').catch(function () {});
+      });
+    }
+  </script>
+</body>
+</html>
